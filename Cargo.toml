@@ -7,12 +7,12 @@ edition = "2021"
 
 [features]
 default = ["clipboard"]
-clipboard = ["dep:clipboard"]
+clipboard = ["dep:arboard"]
 
 [dependencies]
 async-trait = "0.1.72"
 clap = { version = "4.3.19", features = ["derive"] }
-clipboard = { version = "0.5.0", optional = true }
+arboard = { version = "3.2.0", optional = true }
 crossterm = "0.26.1"
 dialoguer = "0.10.4"
 eventsource-stream = "0.2.3"

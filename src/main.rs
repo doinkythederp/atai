@@ -2,7 +2,7 @@ use std::{env, io::stdout};
 
 use adapters::{chatgpt::Chatgpt, Adapter};
 #[cfg(feature = "clipboard")]
-use clipboard::{ClipboardContext, ClipboardProvider};
+use arboard::Clipboard;
 use config::Config;
 use crossterm::{
     cursor::MoveUp,
@@ -120,8 +120,8 @@ async fn main() {
             }
             #[cfg(feature = "clipboard")]
             COPY_TO_CLIPBOARD => {
-                let mut clipboard: ClipboardContext = ClipboardProvider::new().unwrap();
-                clipboard.set_contents(code).unwrap();
+                let mut clipboard = Clipboard::new().unwrap();
+                clipboard.set_text(code).unwrap();
                 break;
             }
             REFINE => {
