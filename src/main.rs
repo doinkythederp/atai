@@ -1,4 +1,4 @@
-use std::{env, io::stdout};
+use std::{env, io::stdout, panic::AssertUnwindSafe};
 
 use adapters::{chatgpt::Chatgpt, Adapter};
 #[cfg(feature = "clipboard")]
@@ -10,6 +10,7 @@ use crossterm::{
     tty::IsTty,
     ExecutableCommand,
 };
+use futures::FutureExt;
 use parse::extract_code;
 use tracing_subscriber::EnvFilter;
 
@@ -58,28 +59,28 @@ async fn main() {
 
     loop {
         println!();
-        let response = adapter
-            .generate(&prompt, &mut |progress: String| {
-                if is_tty {
-                    let markdown = termimad::term_text(&progress);
-                    let lines = markdown.lines.len() as u16;
-                    if used_response_lines > 0 {
-                        stdout
-                            .execute(MoveUp(used_response_lines))
-                            .unwrap()
-                            .execute(Clear(ClearType::FromCursorDown))
-                            .unwrap();
-                    }
-                    used_response_lines = lines;
-                    print!("{}", markdown);
+        let response = AssertUnwindSafe(adapter.generate(&prompt, &mut |progress: String| {
+            if is_tty {
+                let markdown = termimad::term_text(&progress);
+                let lines = markdown.lines.len() as u16;
+                if used_response_lines > 0 {
+                    stdout
+                        .execute(MoveUp(used_response_lines))
+                        .unwrap()
+                        .execute(Clear(ClearType::FromCursorDown))
+                        .unwrap();
                 }
-            })
-            .await;
-        let response = response.unwrap_or_else(|err| {
+                used_response_lines = lines;
+                print!("{}", markdown);
+            }
+        }))
+        .catch_unwind()
+        .await;
+        let response = response.unwrap_or_else(|_| {
             eprintln!("ChatGPT adapter failed. Tips:");
             eprintln!("- Find your token: https://chat.openai.com/api/auth/session");
             eprintln!("- Update your config: ~/.config/atai/config.toml");
-            panic!("{err}");
+            std::process::exit(1);
         });
         if !is_tty {
             println!("{}", response);

@@ -71,7 +71,7 @@ impl Adapter for Chatgpt {
         &mut self,
         prompt: &str,
         progress_hook: &mut (impl FnMut(String) + Send),
-    ) -> Result<String, String> {
+    ) -> String {
         let parent_message_id = self
             .last_message_id
             .to_owned()
@@ -131,7 +131,7 @@ impl Adapter for Chatgpt {
             };
             if let Some(err) = json.error {
                 debug!("Recieved error field, stopping");
-                return Err(err.to_string());
+                panic!("ChatGPT returned error: {err}");
             }
             if json.message.author.role != AuthorRole::Assistant {
                 continue;
@@ -147,6 +147,6 @@ impl Adapter for Chatgpt {
         self.last_message_id = id;
         self.conversation_id = conversation_id;
 
-        Ok(message.unwrap().join(" "))
+        message.unwrap().join(" ")
     }
 }

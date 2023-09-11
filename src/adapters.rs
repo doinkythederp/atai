@@ -8,5 +8,5 @@ pub trait Adapter {
         &mut self,
         prompt: &str,
         progress_hook: &mut (impl FnMut(String) + Send),
-    ) -> Result<String, String>;
+    ) -> String;
 }
