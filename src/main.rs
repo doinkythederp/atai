@@ -75,12 +75,12 @@ async fn main() {
                 }
             })
             .await;
-        let Ok(response) = response else {
+        let response = response.unwrap_or_else(|err| {
             eprintln!("ChatGPT adapter failed. Tips:");
             eprintln!("- Find your token: https://chat.openai.com/api/auth/session");
             eprintln!("- Update your config: ~/.config/atai/config.toml");
-            panic!("{response}");
-        };
+            panic!("{err}");
+        });
         if !is_tty {
             println!("{}", response);
         }
