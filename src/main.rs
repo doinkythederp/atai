@@ -74,8 +74,13 @@ async fn main() {
                     print!("{}", markdown);
                 }
             })
-            .await
-            .unwrap();
+            .await;
+        let Ok(response) = response else {
+            eprintln!("ChatGPT adapter failed. Tips:");
+            eprintln!("- Find your token: https://chat.openai.com/api/auth/session");
+            eprintln!("- Update your config: ~/.config/atai/config.toml");
+            panic!(response);
+        };
         if !is_tty {
             println!("{}", response);
         }
